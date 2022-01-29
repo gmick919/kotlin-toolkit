@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="documentSelectorArray">
-        <item>Select from Device</item>
-        <item>Enter a URL</item>
+        <item>Add book from Device</item>
+        <item>Add book from URL</item>
+        <item>Sign In</item>
+        <item>Sign Up</item>
+        <item>Get Settings</item>
+        <item>Update Settings</item>
     </string-array>
 
     <string-array name="font_list">

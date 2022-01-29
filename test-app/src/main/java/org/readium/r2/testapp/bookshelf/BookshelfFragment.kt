@@ -23,14 +23,20 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.testapp.LingVisSDK
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentBookshelfBinding
 import org.readium.r2.testapp.domain.model.Book
 import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
 import org.readium.r2.testapp.reader.ReaderContract
+import kotlin.Result.Companion.failure
 
 class BookshelfFragment : Fragment() {
 
@@ -40,6 +46,8 @@ class BookshelfFragment : Fragment() {
     private lateinit var readerLauncher: ActivityResultLauncher<ReaderContract.Input>
     private var _binding: FragmentBookshelfBinding? = null
     private val binding get() = _binding!!
+    private lateinit var lingVisSdk: LingVisSDK
+    private val uiScope = CoroutineScope(Dispatchers.Main)
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -87,18 +95,37 @@ class BookshelfFragment : Fragment() {
             bookshelfAdapter.submitList(it)
         })
 
+        lingVisSdk = LingVisSDK(null, requireActivity().applicationContext)
+
         // FIXME embedded dialogs like this are ugly
         binding.bookshelfAddBookFab.setOnClickListener {
             var selected = 0
+            val showResult = { result: Result<String>, successMsg: String? ->
+                MaterialAlertDialogBuilder(requireContext())
+                    .setTitle(if (result.isFailure) "Error" else "")
+                    .setMessage(if (result.isFailure) result.exceptionOrNull()?.message else (successMsg ?: result.getOrNull()))
+                    .setPositiveButton(getString(R.string.ok), null).show()
+            }
+            val showSettings = {
+                uiScope.launch {
+                    val result = lingVisSdk.getSettings()
+                    var msg = result.getOrNull()
+                    if (msg != null) {
+                        val parts = msg.split(",")
+                        msg =
+                            "Learning language: ${parts[0]}\nYour language: ${parts[1]}\nYour level: ${parts[2]}\nEmail: ${parts[3]}"
+                    }
+                    showResult(result, msg)
+                }
+            }
             MaterialAlertDialogBuilder(requireContext())
-                .setTitle(getString(R.string.add_book))
                 .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
                     dialog.cancel()
                 }
                 .setPositiveButton(getString(R.string.ok)) { _, _ ->
                     if (selected == 0) {
                         documentPickerLauncher.launch("*/*")
-                    } else {
+                    } else if (selected == 1) {
                         val urlEditText = EditText(requireContext())
                         val urlDialog = MaterialAlertDialogBuilder(requireContext())
                             .setTitle(getString(R.string.add_book))
@@ -122,6 +149,57 @@ class BookshelfFragment : Fragment() {
                                 urlDialog.dismiss()
                             }
                         }
+                    } else if (selected == 2 || selected == 3) {
+                        val dialogView: View = LayoutInflater.from(activity).inflate(R.layout.sign_in_dialog, null, false)
+                        MaterialAlertDialogBuilder(requireContext())
+                            .setView(dialogView)
+                            .setMessage(if (selected == 2) "Sign In\nUse an existing account" else "Sign Up\nCreate a new account")
+                            .setNegativeButton(R.string.cancel) { dialog, _ ->
+                                dialog.cancel()
+                            }
+                            .setPositiveButton(if (selected == 2) "Sign In" else "Sign Up") { dialog, _ ->
+                                val emailField: EditText = dialogView.findViewById(R.id.emailEdit)
+                                val passwordField: EditText = dialogView.findViewById(R.id.passwordEdit)
+                                val email: String = emailField.text.toString().trim()
+                                val password: String = passwordField.text.toString().trim()
+                                if (email == "") {
+                                    showResult(failure(Exception("Email and password cannot be empty")), "")
+                                } else {
+                                    uiScope.launch {
+                                        showResult(lingVisSdk.signIn(email, password, selected == 3), "Signed in as ${email}")
+                                    }
+                                }
+                                dialog.dismiss()
+                            }
+                            .show()
+                    } else if (selected == 4) {
+                        showSettings()
+                    } else if (selected == 5) {
+                        val dialogView: View = LayoutInflater.from(activity).inflate(R.layout.update_settings_dialog, null, false)
+                        MaterialAlertDialogBuilder(requireContext())
+                            .setView(dialogView)
+                            .setMessage("Change any of the settings below, leave empty those you don't want to change")
+                            .setNegativeButton(R.string.cancel) { dialog, _ ->
+                                dialog.cancel()
+                            }
+                            .setPositiveButton("Update") { dialog, _ ->
+                                val l1Field: EditText = dialogView.findViewById(R.id.l1Edit)
+                                val l2Field: EditText = dialogView.findViewById(R.id.l2Edit)
+                                val levelField: EditText = dialogView.findViewById(R.id.levelEdit)
+                                val l1: String = l1Field.text.toString().trim()
+                                val l2: String = l2Field.text.toString().trim()
+                                val level: String = levelField.text.toString().trim()
+                                uiScope.launch {
+                                    val result = lingVisSdk.updateSettings(l2, l1, level)
+                                    if (result.isFailure) {
+                                        showResult(result, null)
+                                    } else {
+                                        showSettings()
+                                    }
+                                }
+                                dialog.dismiss()
+                            }
+                            .show()
                     }
                 }
                 .setSingleChoiceItems(R.array.documentSelectorArray, 0) { _, which ->

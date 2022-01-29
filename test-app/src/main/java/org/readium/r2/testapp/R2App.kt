@@ -32,6 +32,8 @@ class R2App : Application() {
         server = Server(s.localPort, applicationContext)
         startServer()
         R2DIRECTORY = r2Directory
+        server.loadCustomResource("window.lingVisSdk_Readium_isAndroid = true; ".byteInputStream(), "lingVisSdk-pre.js", Injectable.Script) //poly
+        server.loadCustomResource(assets.open("readium/scripts/poly-core.js"), "lingVisSdk-poly-core.js", Injectable.Script) //poly
     }
 
     companion object {
