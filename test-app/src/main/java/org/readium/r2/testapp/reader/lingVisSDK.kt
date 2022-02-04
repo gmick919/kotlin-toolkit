@@ -1,16 +1,9 @@
-package org.readium.r2.testapp
+package org.readium.r2.lingVisSdk
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
-import android.graphics.PixelFormat
 import android.os.Build
-import android.view.Gravity
-import android.view.View
-import android.view.ViewGroup
-import android.view.WindowManager
 import android.webkit.WebView
-import android.widget.LinearLayout
 import kotlinx.coroutines.*
 import org.readium.r2.navigator.BuildConfig
 
@@ -18,7 +11,10 @@ import java.util.*
 
 import org.readium.r2.navigator.R2WebView
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
+import org.readium.r2.navigator.pager.R2EpubPageFragment
+import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
+import org.readium.r2.shared.publication.Publication
 import java.lang.Exception
 import kotlin.Result.Companion.failure
 import kotlin.Result.Companion.success
@@ -26,19 +22,38 @@ import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
+data class ChangeLanguageParams(val l2: String = "", val l1: String = "", val proceed: Boolean = true)
+
 
 @SuppressLint("SetJavaScriptEnabled")
-class LingVisSDK(val navigatorFragment: EpubNavigatorFragment?, val context: Context) {
+class LingVisSDK(val navigatorFragment: EpubNavigatorFragment?, val context: Context, val publication: Publication?) {
     private val webViews = mutableListOf<WebView>()
     private val handlers = mutableListOf<LingVisHandler>()
-    private lateinit var mainWebView: WebView
-    private var mainHandler: LingVisHandler? = null
+    private val bookId = if (publication == null) "" else publication.metadata.title + ":" + (publication.metadata.identifier ?: "")
+    private val uiScope = CoroutineScope(Dispatchers.Main)
+
+    var willChangeLanguage: ((Publication) -> ChangeLanguageParams)? = null
+    var didChangeLanguage: ((Result<String>) -> Unit)? = null
+
+    companion object {
+        fun prepare(app: String) {
+            LingVisSDK.app = app
+        }
+        internal var app: String = "unknown"
+        internal var updating: Boolean = false
+        internal var updatingInternal: Boolean = false
+        @SuppressLint("StaticFieldLeak")
+        private lateinit var mainWebView: WebView
+        @SuppressLint("StaticFieldLeak")
+        private var mainHandler: LingVisHandler? = null
+        private var currLang: String = "sv"
+    }
 
     init {
         WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
         if (navigatorFragment == null) {
             mainWebView = WebView(context)
-            mainHandler = LingVisHandler(mainWebView, context, true)
+            mainHandler = LingVisHandler(mainWebView, context, true, "")
             mainWebView.settings.javaScriptEnabled = true
             mainWebView.settings.domStorageEnabled = true
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -50,43 +65,69 @@ class LingVisSDK(val navigatorFragment: EpubNavigatorFragment?, val context: Con
 
     init {
         if (navigatorFragment != null) {
-            Timer().scheduleAtFixedRate(object : TimerTask() {
-                override fun run() {
-                    var pager: R2ViewPager? = null
-                    try {
-                        pager = navigatorFragment.resourcePager
-                    } catch (e: Exception) {
+            if (publication != null) {
+                var lang = publication.metadata.languages.firstOrNull() ?: ""
+                if (lang != "" && lang != currLang) {
+                    val parts = lang.split("|")
+                    lang = parts[0]
+                    var l1 = ""
+                    var proceed = true
+                    if (willChangeLanguage != null) {
+                        val params = willChangeLanguage!!.invoke(publication)
+                        proceed = params.proceed
+                        if (params.l2 != "") {
+                            lang = params.l2
+                        }
+                        if (params.l1 != "") {
+                            l1 = params.l1
+                        }
                     }
-                    if (pager == null) return
-                    if (pager.childCount <= webViews.size) return
-                    for (i in 0 until pager.childCount) {
-                        val webView =
-                            pager.getChildAt(i).findViewById(R.id.webView) as? R2WebView ?: continue
-                        if (webViews.contains(webView)) continue
-                        val handler = LingVisHandler(webView, context, false)
-                        handlers.add(handler)
-                        webViews.add(webView)
+                    if (proceed) {
+                        uiScope.launch {
+                            updatingInternal = true
+                            val result = updateSettings(lang, l1, "")
+                            updatingInternal = false
+                            if (result.isSuccess) {
+                                updating = false
+                                attachToWebViews()
+                            }
+                            if (didChangeLanguage != null) {
+                                didChangeLanguage!!(result)
+                            }
+                        }
                     }
+                } else {
+                    attachToWebViews()
                 }
-            }, 200, 1000)
+            }
         }
     }
 
-    private fun escape(str: String?): String {
-        if (str == null) return "";
-        return str
-            .replace("\\", "\\\\")
-            .replace("'", "\\'")
-            .replace("\"", "\\\"")
-            .replace("\n", "\\n")
-            .replace("\r", "\\r")
-            .replace("\u2028", "\\u2028")
-            .replace("\u2029", "\\u2029")
+    private fun attachToWebViews() {
+        Timer().scheduleAtFixedRate(object : TimerTask() {
+            override fun run() {
+                var pager: R2ViewPager? = null
+                try {
+                    pager = navigatorFragment?.resourcePager
+                } catch (e: Exception) {
+                }
+                if (pager == null) return
+                val currentFragment = (pager.adapter as R2PagerAdapter).getCurrentFragment()
+                if (!(currentFragment is R2EpubPageFragment)) return
+                val webView = currentFragment.webView
+                if (webView == null) return
+                if (webViews.contains(webView)) return
+                val handler = LingVisHandler(webView, context, false, bookId)
+                handlers.add(handler)
+                webViews.add(webView)
+            }
+        }, 200, 1000)
     }
 
     suspend fun signIn(email: String, password: String, newAccount: Boolean): Result<String> = suspendCoroutine { cont ->
         val contId = mainHandler!!.addContinuation(cont)
-        mainWebView.evaluateJavascript("lingVisSdk.polyReadiumSignIn('${contId}', '', '${escape(email)}', '${escape(password)}', '', '', ${newAccount})", null)
+        mainWebView.evaluateJavascript("lingVisSdk.polyReadiumSignIn('${contId}', '', '${escape(email)}', '${escape(password)}'," +
+                "'${escape(app)}', '', ${newAccount})", null)
     }
 
     suspend fun getSettings(): Result<String> = suspendCoroutine { cont ->
@@ -96,23 +137,29 @@ class LingVisSDK(val navigatorFragment: EpubNavigatorFragment?, val context: Con
 
     suspend fun updateSettings(l2: String, l1: String, level: String): Result<String> = suspendCoroutine { cont ->
         val contId = mainHandler!!.addContinuation(cont)
+        if (l2 != "") {
+            updating = true
+        }
         mainWebView.evaluateJavascript("lingVisSdk.polyReadiumUpdateSettings('${contId}', '${l2}', '${l1}', '${level}')", null)
+        if (!updatingInternal) {
+            updating = false
+        }
     }
 }
 
-class LingVisHandler(val webView: WebView, val context: Context, val isMain: Boolean) {
+class LingVisHandler(val webView: WebView, val context: Context, val isMain: Boolean, val bookId: String) {
     companion object {
         private var token = ""
+        private var gotToken = true
     }
     private val uiScope = CoroutineScope(Dispatchers.Main)
     private val continuations = hashMapOf<String, Continuation<Result<String>>>()
-    private var gotToken = true
 
     init {
         uiScope.launch {
             webView.addJavascriptInterface(this@LingVisHandler, "LingVisSDK")
             //tbd: should I prevent a leak? Search for: See https://github.com/readium/r2-navigator-kotlin/issues/52
-            webView.settings.domStorageEnabled = true;
+            webView.settings.domStorageEnabled = true
             webView.reload()
         }
 
@@ -136,7 +183,7 @@ class LingVisHandler(val webView: WebView, val context: Context, val isMain: Boo
 
     @android.webkit.JavascriptInterface
     fun ready(args: String) {
-        if (!gotToken) {
+        if (!gotToken || LingVisSDK.updating) {
             uiScope.launch {
                 delay(200)
                 ready(args)
@@ -144,8 +191,12 @@ class LingVisHandler(val webView: WebView, val context: Context, val isMain: Boo
             return
         }
         uiScope.launch {
-            val bookId = if (isMain) "" else "my-book-id"
-            webView.evaluateJavascript("lingVisSdk.polyReadiumSignIn('', '${token}', '', '', '', '${bookId}')", null)
+            val id = if (isMain) "" else escape(bookId)
+            if (id == "") {
+                gotToken = false
+            }
+            webView.evaluateJavascript("lingVisSdk.polyReadiumSignIn('', '${token}', '', '', " +
+                    "'${escape(LingVisSDK.app)}', '${id}')", null)
         }
     }
 
@@ -154,6 +205,7 @@ class LingVisHandler(val webView: WebView, val context: Context, val isMain: Boo
         val parts = args.split("|")
         val callback = parts[0]
         token = parts[1]
+        gotToken = true
         val error = parts[2]
         invokeContinuation(callback, token, error)
     }
@@ -164,3 +216,17 @@ class LingVisHandler(val webView: WebView, val context: Context, val isMain: Boo
         invokeContinuation(parts[0], parts[1], parts[2])
     }
 }
+
+internal fun escape(str: String?): String {
+    if (str == null) return ""
+    return str
+        .replace("\\", "\\\\")
+        .replace("'", "\\'")
+        .replace("\"", "\\\"")
+        .replace("\n", "\\n")
+        .replace("\r", "\\r")
+        .replace("\u2028", "\\u2028")
+        .replace("\u2029", "\\u2029")
+}
+
+

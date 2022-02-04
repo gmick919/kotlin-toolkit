@@ -30,7 +30,7 @@ import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.Locator
-import org.readium.r2.testapp.LingVisSDK
+import org.readium.r2.lingVisSdk.LingVisSDK
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentBookshelfBinding
 import org.readium.r2.testapp.domain.model.Book
@@ -95,7 +95,7 @@ class BookshelfFragment : Fragment() {
             bookshelfAdapter.submitList(it)
         })
 
-        lingVisSdk = LingVisSDK(null, requireActivity().applicationContext)
+        lingVisSdk = LingVisSDK(null, requireActivity().applicationContext, null)
 
         // FIXME embedded dialogs like this are ugly
         binding.bookshelfAddBookFab.setOnClickListener {

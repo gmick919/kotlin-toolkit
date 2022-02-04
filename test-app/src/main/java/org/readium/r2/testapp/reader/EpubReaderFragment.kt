@@ -36,7 +36,7 @@ import org.readium.r2.shared.ReadiumCSSName
 import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.testapp.LingVisSDK
+import org.readium.r2.lingVisSdk.LingVisSDK
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.R2App
 import org.readium.r2.testapp.epub.UserSettings
@@ -138,7 +138,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         navigator = childFragmentManager.findFragmentByTag(navigatorFragmentTag) as Navigator
         navigatorFragment = navigator as EpubNavigatorFragment
 
-        lingVisSdk = LingVisSDK(navigatorFragment, requireActivity()) //poly
+        lingVisSdk = LingVisSDK(navigatorFragment, requireActivity(), publication) //poly
 
         return view
     }
@@ -281,7 +281,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
     }
 
     override fun onTap(point: PointF): Boolean {
-        //poly requireActivity().toggleSystemUi()
+        requireActivity().toggleSystemUi() //eis!!!
         return true
     }
 
