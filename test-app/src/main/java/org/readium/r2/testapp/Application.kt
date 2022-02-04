@@ -10,6 +10,7 @@ import android.content.*
 import android.os.IBinder
 import kotlinx.coroutines.*
 import org.readium.r2.lcp.LcpService
+import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.util.Try
 import org.readium.r2.streamer.Streamer
 import org.readium.r2.streamer.server.Server
@@ -74,6 +75,9 @@ class Application : android.app.Application() {
         s.close()
         server = Server(s.localPort, applicationContext)
         startServer()
+
+        server.loadCustomResource("window.lingVisSdk_isAndroid = true; ".byteInputStream(), "lingVisSdk-pre.js", Injectable.Script)
+        server.loadCustomResource(assets.open("readium/scripts/poly-core.js"), "lingVisSdk-poly-core.js", Injectable.Script)
 
         /*
          * Starting media service.

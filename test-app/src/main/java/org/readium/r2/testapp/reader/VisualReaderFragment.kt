@@ -329,11 +329,11 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
     // VisualNavigator.Listener
 
     override fun onTap(point: PointF): Boolean {
-        val navigated = edgeTapNavigation.onTap(point, requireView())
+        val navigated = edgeTapNavigation.onTap(point, requireView()) //eis!!! tbd
         if (!navigated) {
             requireActivity().toggleSystemUi()
         }
-        return true
+        return false //eis!!! true
     }
 
     private val edgeTapNavigation by lazy {

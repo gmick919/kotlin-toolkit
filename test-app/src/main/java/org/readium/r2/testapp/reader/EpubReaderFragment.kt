@@ -26,6 +26,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.delay
 import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.navigator.Navigator
+import org.readium.r2.navigator.R2WebView
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.html.HtmlDecorationTemplate
 import org.readium.r2.navigator.html.toCss
@@ -34,6 +35,7 @@ import org.readium.r2.shared.ReadiumCSSName
 import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.testapp.LingVisSDK
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.epub.UserSettings
 import org.readium.r2.testapp.search.SearchFragment
@@ -56,6 +58,8 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
     private lateinit var userSettings: UserSettings
     private var isScreenReaderVisible = false
     private var isSearchViewIconified = true
+
+    private lateinit var lingVisSdk: LingVisSDK
 
     // Accessibility
     private var isExploreByTouchEnabled = false
@@ -128,6 +132,8 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         navigator = childFragmentManager.findFragmentByTag(navigatorFragmentTag) as Navigator
         navigatorFragment = navigator as EpubNavigatorFragment
 
+        lingVisSdk = LingVisSDK(navigatorFragment, requireActivity())
+
         return view
     }
 
@@ -142,6 +148,14 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
             val appearancePref = navigatorFragment.preferences.getInt(APPEARANCE_REF, 0)
             val backgroundsColors = mutableListOf("#ffffff", "#faf4e8", "#000000")
             navigatorFragment.resourcePager.setBackgroundColor(Color.parseColor(backgroundsColors[appearancePref]))
+
+            /*eis!!!...
+            for (i in 0 until navigatorFragment.resourcePager.childCount) {
+                val webView = navigatorFragment.resourcePager.getChildAt(i)
+                    .findViewById(R.id.webView) as? R2WebView
+                val eis = 0
+            }
+            ...eis!!! */
         }
     }
 
