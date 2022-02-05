@@ -63,7 +63,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
     private var isScreenReaderVisible = false
     private var isSearchViewIconified = true
 
-    private lateinit var lingVisSdk: LingVisSDK //poly
+    private lateinit var lingVisSdk: LingVisSDK
 
 
     // Accessibility
@@ -138,7 +138,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         navigator = childFragmentManager.findFragmentByTag(navigatorFragmentTag) as Navigator
         navigatorFragment = navigator as EpubNavigatorFragment
 
-        lingVisSdk = LingVisSDK(navigatorFragment, requireActivity(), publication) //poly
+        lingVisSdk = LingVisSDK(navigatorFragment, requireActivity(), publication, "")
 
         return view
     }

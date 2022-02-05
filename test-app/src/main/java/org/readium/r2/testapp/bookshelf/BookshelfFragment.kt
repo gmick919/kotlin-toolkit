@@ -95,7 +95,7 @@ class BookshelfFragment : Fragment() {
             bookshelfAdapter.submitList(it)
         })
 
-        lingVisSdk = LingVisSDK(null, requireActivity().applicationContext, null)
+        lingVisSdk = LingVisSDK(null, requireActivity().applicationContext, null, "r2 sample")
 
         // FIXME embedded dialogs like this are ugly
         binding.bookshelfAddBookFab.setOnClickListener {

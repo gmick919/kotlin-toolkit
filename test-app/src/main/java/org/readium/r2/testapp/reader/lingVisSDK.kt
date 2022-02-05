@@ -1,15 +1,16 @@
 package org.readium.r2.lingVisSdk
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.os.Build
+import android.view.View
 import android.webkit.WebView
 import kotlinx.coroutines.*
 import org.readium.r2.navigator.BuildConfig
 
 import java.util.*
 
-import org.readium.r2.navigator.R2WebView
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
@@ -26,7 +27,7 @@ data class ChangeLanguageParams(val l2: String = "", val l1: String = "", val pr
 
 
 @SuppressLint("SetJavaScriptEnabled")
-class LingVisSDK(val navigatorFragment: EpubNavigatorFragment?, val context: Context, val publication: Publication?) {
+class LingVisSDK(val navigatorFragment: EpubNavigatorFragment?, val context: Context, val publication: Publication?, val clientDataArg: String? = "") {
     private val webViews = mutableListOf<WebView>()
     private val handlers = mutableListOf<LingVisHandler>()
     private val bookId = if (publication == null) "" else publication.metadata.title + ":" + (publication.metadata.identifier ?: "")
@@ -47,6 +48,7 @@ class LingVisSDK(val navigatorFragment: EpubNavigatorFragment?, val context: Con
         @SuppressLint("StaticFieldLeak")
         private var mainHandler: LingVisHandler? = null
         private var currLang: String = "sv"
+        internal var clientData: String = ""
     }
 
     init {
@@ -60,6 +62,9 @@ class LingVisSDK(val navigatorFragment: EpubNavigatorFragment?, val context: Con
                 mainWebView.settings.safeBrowsingEnabled = false
             }
             mainWebView.loadUrl("file:///android_asset/readium/scripts/poly-core.html")
+        }
+        if (clientDataArg != null && clientDataArg != "") {
+            clientData = clientDataArg
         }
     }
 
@@ -117,7 +122,7 @@ class LingVisSDK(val navigatorFragment: EpubNavigatorFragment?, val context: Con
                 val webView = currentFragment.webView
                 if (webView == null) return
                 if (webViews.contains(webView)) return
-                val handler = LingVisHandler(webView, context, false, bookId)
+                val handler = LingVisHandler(webView, currentFragment.requireActivity(), false, bookId)
                 handlers.add(handler)
                 webViews.add(webView)
             }
@@ -145,6 +150,10 @@ class LingVisSDK(val navigatorFragment: EpubNavigatorFragment?, val context: Con
             updating = false
         }
     }
+
+    fun setClientData(data: String) {
+        clientData = data
+    }
 }
 
 class LingVisHandler(val webView: WebView, val context: Context, val isMain: Boolean, val bookId: String) {
@@ -152,6 +161,7 @@ class LingVisHandler(val webView: WebView, val context: Context, val isMain: Boo
         private var token = ""
         private var gotToken = true
     }
+
     private val uiScope = CoroutineScope(Dispatchers.Main)
     private val continuations = hashMapOf<String, Continuation<Result<String>>>()
 
@@ -195,8 +205,10 @@ class LingVisHandler(val webView: WebView, val context: Context, val isMain: Boo
             if (id == "") {
                 gotToken = false
             }
-            webView.evaluateJavascript("lingVisSdk.polyReadiumSignIn('', '${token}', '', '', " +
-                    "'${escape(LingVisSDK.app)}', '${id}')", null)
+            webView.evaluateJavascript(
+                "lingVisSdk.polyReadiumSignIn('', '${token}', '', '', " +
+                        "'${escape(LingVisSDK.app)}', '${id}', '', '${escape(LingVisSDK.clientData)}')", null
+            )
         }
     }
 
@@ -215,6 +227,14 @@ class LingVisHandler(val webView: WebView, val context: Context, val isMain: Boo
         val parts = args.split("|")
         invokeContinuation(parts[0], parts[1], parts[2])
     }
+
+    @android.webkit.JavascriptInterface
+    fun onSelect(args: String) {
+        if (context !is Activity) return;
+        uiScope.launch {
+            context.hideSystemUi()
+        }
+    }
 }
 
 internal fun escape(str: String?): String {
@@ -228,5 +248,27 @@ internal fun escape(str: String?): String {
         .replace("\u2028", "\\u2028")
         .replace("\u2029", "\\u2029")
 }
+
+// from testapp/utils/SystemUiManagement.kt
+// Using ViewCompat and WindowInsetsCompat does not work properly in all versions of Android
+@Suppress("DEPRECATION")
+/** Returns `true` if fullscreen or immersive mode is not set. */
+private fun Activity.isSystemUiVisible(): Boolean {
+    return this.window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0
+}
+// Using ViewCompat and WindowInsetsCompat does not work properly in all versions of Android
+@Suppress("DEPRECATION")
+/** Enable fullscreen or immersive mode. */
+fun Activity.hideSystemUi() {
+    this.window.decorView.systemUiVisibility = (
+            View.SYSTEM_UI_FLAG_IMMERSIVE
+                    or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_FULLSCREEN
+            )
+}
+
 
 
