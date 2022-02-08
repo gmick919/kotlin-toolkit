@@ -14,6 +14,7 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.content.ContentResolver
 import android.content.Context
+import org.readium.r2.lingVisSdk.LingVisSDK
 import org.readium.r2.shared.Injectable
 import org.readium.r2.streamer.server.Server
 import org.readium.r2.testapp.BuildConfig.DEBUG
@@ -32,8 +33,11 @@ class R2App : Application() {
         server = Server(s.localPort, applicationContext)
         startServer()
         R2DIRECTORY = r2Directory
-        server.loadCustomResource("window.lingVisSdk_Readium_isAndroid = true; ".byteInputStream(), "lingVisSdk-pre.js", Injectable.Script) //poly
-        server.loadCustomResource(assets.open("readium/scripts/poly-core.js"), "lingVisSdk-poly-core.js", Injectable.Script) //poly
+        // LingVisSDK...
+        LingVisSDK.prepare("R2TestApp-Android", "r2 sample")
+        server.loadCustomResource("window.lingVisSdk_Readium_isAndroid = true; ".byteInputStream(), "lingVisSdk-pre.js", Injectable.Script)
+        server.loadCustomResource(assets.open("readium/scripts/poly-core.js"), "lingVisSdk-poly-core.js", Injectable.Script)
+        //...LingVisSDK
     }
 
     companion object {

@@ -27,7 +27,7 @@ data class ChangeLanguageParams(val l2: String = "", val l1: String = "", val pr
 
 
 @SuppressLint("SetJavaScriptEnabled")
-class LingVisSDK(val navigatorFragment: EpubNavigatorFragment?, val context: Context, val publication: Publication?, val clientDataArg: String? = "") {
+class LingVisSDK(val navigatorFragment: EpubNavigatorFragment?, val context: Context, val publication: Publication?) {
     private val webViews = mutableListOf<WebView>()
     private val handlers = mutableListOf<LingVisHandler>()
     private val bookId = if (publication == null) "" else publication.metadata.title + ":" + (publication.metadata.identifier ?: "")
@@ -37,8 +37,9 @@ class LingVisSDK(val navigatorFragment: EpubNavigatorFragment?, val context: Con
     var didChangeLanguage: ((Result<String>) -> Unit)? = null
 
     companion object {
-        fun prepare(app: String) {
+        fun prepare(app: String, clientData: String) {
             LingVisSDK.app = app
+            LingVisSDK.clientData = clientData
         }
         internal var app: String = "unknown"
         internal var updating: Boolean = false
@@ -47,7 +48,7 @@ class LingVisSDK(val navigatorFragment: EpubNavigatorFragment?, val context: Con
         private lateinit var mainWebView: WebView
         @SuppressLint("StaticFieldLeak")
         private var mainHandler: LingVisHandler? = null
-        private var currLang: String = "sv"
+        private var currLang: String = ""
         internal var clientData: String = ""
     }
 
@@ -62,9 +63,6 @@ class LingVisSDK(val navigatorFragment: EpubNavigatorFragment?, val context: Con
                 mainWebView.settings.safeBrowsingEnabled = false
             }
             mainWebView.loadUrl("file:///android_asset/readium/scripts/poly-core.html")
-        }
-        if (clientDataArg != null && clientDataArg != "") {
-            clientData = clientDataArg
         }
     }
 
@@ -94,6 +92,7 @@ class LingVisSDK(val navigatorFragment: EpubNavigatorFragment?, val context: Con
                             updatingInternal = false
                             if (result.isSuccess) {
                                 updating = false
+                                currLang = lang
                                 attachToWebViews()
                             }
                             if (didChangeLanguage != null) {
@@ -149,10 +148,6 @@ class LingVisSDK(val navigatorFragment: EpubNavigatorFragment?, val context: Con
         if (!updatingInternal) {
             updating = false
         }
-    }
-
-    fun setClientData(data: String) {
-        clientData = data
     }
 }
 

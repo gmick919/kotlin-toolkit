@@ -46,8 +46,11 @@ class BookshelfFragment : Fragment() {
     private lateinit var readerLauncher: ActivityResultLauncher<ReaderContract.Input>
     private var _binding: FragmentBookshelfBinding? = null
     private val binding get() = _binding!!
+
+    // LingVisSDK...
     private lateinit var lingVisSdk: LingVisSDK
     private val uiScope = CoroutineScope(Dispatchers.Main)
+    // ...LingVisSDK
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -95,7 +98,7 @@ class BookshelfFragment : Fragment() {
             bookshelfAdapter.submitList(it)
         })
 
-        lingVisSdk = LingVisSDK(null, requireActivity().applicationContext, null, "r2 sample")
+        lingVisSdk = LingVisSDK(null, requireActivity().applicationContext, null)
 
         // FIXME embedded dialogs like this are ugly
         binding.bookshelfAddBookFab.setOnClickListener {
@@ -150,6 +153,7 @@ class BookshelfFragment : Fragment() {
                             }
                         }
                     } else if (selected == 2 || selected == 3) {
+                        // LingVisSDK...
                         val dialogView: View = LayoutInflater.from(activity).inflate(R.layout.sign_in_dialog, null, false)
                         MaterialAlertDialogBuilder(requireContext())
                             .setView(dialogView)
@@ -201,6 +205,7 @@ class BookshelfFragment : Fragment() {
                             }
                             .show()
                     }
+                    // ...LingVisSDK
                 }
                 .setSingleChoiceItems(R.array.documentSelectorArray, 0) { _, which ->
                     selected = which

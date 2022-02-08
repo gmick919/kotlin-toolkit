@@ -63,7 +63,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
     private var isScreenReaderVisible = false
     private var isSearchViewIconified = true
 
-    private lateinit var lingVisSdk: LingVisSDK
+    private lateinit var lingVisSdk: LingVisSDK // LingVisSDK
 
 
     // Accessibility
@@ -138,7 +138,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         navigator = childFragmentManager.findFragmentByTag(navigatorFragmentTag) as Navigator
         navigatorFragment = navigator as EpubNavigatorFragment
 
-        lingVisSdk = LingVisSDK(navigatorFragment, requireActivity(), publication, "")
+        lingVisSdk = LingVisSDK(navigatorFragment, requireActivity(), publication) // LingVisSDK
 
         return view
     }
@@ -281,7 +281,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
     }
 
     override fun onTap(point: PointF): Boolean {
-        requireActivity().toggleSystemUi() //eis!!!
+        requireActivity().toggleSystemUi()
         return true
     }
 
