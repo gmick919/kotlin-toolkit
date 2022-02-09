@@ -41,6 +41,7 @@ class LingVisSDK(val navigatorFragment: EpubNavigatorFragment?, val context: Con
             LingVisSDK.app = app
             LingVisSDK.clientData = clientData
         }
+        private const val defaultLang = "sv"
         internal var app: String = "unknown"
         internal var updating: Boolean = false
         internal var updatingInternal: Boolean = false
@@ -69,7 +70,7 @@ class LingVisSDK(val navigatorFragment: EpubNavigatorFragment?, val context: Con
     init {
         if (navigatorFragment != null) {
             if (publication != null) {
-                var lang = publication.metadata.languages.firstOrNull() ?: ""
+                var lang = publication.metadata.languages.firstOrNull() ?: defaultLang
                 if (lang != "" && lang != currLang) {
                     val parts = lang.split("|")
                     lang = parts[0]
