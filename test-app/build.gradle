@@ -35,7 +35,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 31
 
-        applicationId "org.readium.r2reader"
+        applicationId "com.brainglass.readium.r2reader"
 
         versionCode project.ext.versionCode
         versionName project.ext.versionName
