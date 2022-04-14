@@ -5,6 +5,7 @@
         <item>Add book from URL</item>
         <item>Sign In</item>
         <item>Sign Up</item>
+        <item>Sign Out</item>
         <item>Get Settings</item>
         <item>Update Settings</item>
     </string-array>

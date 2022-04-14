@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import android.view.View
 import android.webkit.WebView
 import kotlinx.coroutines.*
@@ -135,6 +136,11 @@ class LingVisSDK(val navigatorFragment: EpubNavigatorFragment?, val context: Con
                 "'${escape(app)}', '', ${newAccount})", null)
     }
 
+    suspend fun signOut(): Result<String> = suspendCoroutine { cont ->
+        val contId = mainHandler!!.addContinuation(cont)
+        mainWebView.evaluateJavascript("lingVisSdk.polyReadiumSignOut('${contId}')", null)
+    }
+
     suspend fun getSettings(): Result<String> = suspendCoroutine { cont ->
         val contId = mainHandler!!.addContinuation(cont)
         mainWebView.evaluateJavascript("lingVisSdk.polyReadiumGetSettings('${contId}')", null)
@@ -226,10 +232,15 @@ class LingVisHandler(val webView: WebView, val context: Context, val isMain: Boo
 
     @android.webkit.JavascriptInterface
     fun onSelect(args: String) {
-        if (context !is Activity) return;
+        if (context !is Activity) return
         uiScope.launch {
             context.hideSystemUi()
         }
+    }
+
+    @android.webkit.JavascriptInterface
+    fun log(args: String) {
+        Log.d("lingVis", args)
     }
 }
 

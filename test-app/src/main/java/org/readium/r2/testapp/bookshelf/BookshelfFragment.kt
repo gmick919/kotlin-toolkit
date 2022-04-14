@@ -177,8 +177,12 @@ class BookshelfFragment : Fragment() {
                             }
                             .show()
                     } else if (selected == 4) {
-                        showSettings()
+                        uiScope.launch {
+                            showResult(lingVisSdk.signOut(), "Signed out")
+                        }
                     } else if (selected == 5) {
+                        showSettings()
+                    } else if (selected == 6) {
                         val dialogView: View = LayoutInflater.from(activity).inflate(R.layout.update_settings_dialog, null, false)
                         MaterialAlertDialogBuilder(requireContext())
                             .setView(dialogView)
