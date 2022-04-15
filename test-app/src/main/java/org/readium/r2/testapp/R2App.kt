@@ -36,7 +36,7 @@ class R2App : Application() {
         // LingVisSDK...
         LingVisSDK.prepare("R2TestApp-Android", "r2 sample")
         server.loadCustomResource("window.lingVisSdk_Readium_isAndroid = true; ".byteInputStream(), "lingVisSdk-pre.js", Injectable.Script)
-        server.loadCustomResource(assets.open("readium/scripts/poly-core.js"), "lingVisSdk-poly-core.js", Injectable.Script)
+        server.loadCustomResource(assets.open("readium/scripts/lingVisSdk.js"), "lingVisSdk-poly-core.js", Injectable.Script)
         //...LingVisSDK
     }
 

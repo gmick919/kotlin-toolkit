@@ -64,7 +64,7 @@ class LingVisSDK(val navigatorFragment: EpubNavigatorFragment?, val context: Con
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 mainWebView.settings.safeBrowsingEnabled = false
             }
-            mainWebView.loadUrl("file:///android_asset/readium/scripts/poly-core.html")
+            mainWebView.loadUrl("file:///android_asset/readium/scripts/lingVisSdk.html")
         }
     }
 
