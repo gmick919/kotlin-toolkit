@@ -170,7 +170,7 @@ class BookshelfFragment : Fragment() {
                                     showResult(failure(Exception("Email and password cannot be empty")), "")
                                 } else {
                                     uiScope.launch {
-                                        showResult(lingVisSdk.signIn(email, password, selected == 3), "Signed in as ${email}")
+                                        showResult(lingVisSdk.signIn(email, password, selected == 3, false), "Signed in as ${email}")
                                     }
                                 }
                                 dialog.dismiss()
