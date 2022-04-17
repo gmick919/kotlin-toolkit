@@ -1,3 +1,10 @@
+# Readium Kotlin Toolkit with Integrated LingVis SDK
+
+This repository was forked on Jan 29 2002 from https://github.com/readium/kotlin-toolkit
+It contains the standard Readium sample app with integrated LingVis SDK.
+LingVis SDK repository for Android with release files and documentation is in https://github.com/Brainglass/lingVis-readium-android
+The original README before LingVis SDK integration follows below:
+
 # Readium Kotlin Toolkit
 
 [Readium Mobile](https://github.com/readium/mobile) is a toolkit for ebooks, audiobooks and comics written in Swift & Kotlin.
