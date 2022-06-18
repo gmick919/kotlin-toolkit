@@ -187,7 +187,7 @@ class LingVisHandler(val sdk: LingVisSDK, val webView: WebView, val context: Con
     companion object {
         private var token = ""
         private var clientToken = ""
-        private var clientTokenTime = 0
+        private var clientTokenTime: Long = 0
         private var gotToken = true
     }
 
@@ -248,7 +248,7 @@ class LingVisHandler(val sdk: LingVisSDK, val webView: WebView, val context: Con
         token = parts[1]
         clientToken = parts[2]
         try {
-            clientTokenTime = parts[3].toInt();
+            clientTokenTime = parts[3].toLong();
         } catch (e: Exception) {}
         gotToken = true
         val error = parts[4]
