@@ -170,7 +170,12 @@ class BookshelfFragment : Fragment() {
                                     showResult(failure(Exception("Email and password cannot be empty")), "")
                                 } else {
                                     uiScope.launch {
-                                        showResult(lingVisSdk.signIn(email, password, selected == 3, false), "Signed in as ${email}")
+                                        val key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbGllbnRJZCI6ImVmMzZmMzRhLTViNmItYjU4Yi1kZTk4LTlkNjM0ZDFlMDFhNiIsImVtYWlsIjoid2ViLXNhbXBsZS5ib2d1c0BzcHJha2tyYWZ0LmNvbSIsImlhdCI6MTY1NTU1Nzc3Nn0.waJ41buXn8lh_hkRdNQ7gUG6jfCTTkp2JPPgX2hZsTY"
+                                        fun onExpired(refresh: (String) -> Unit) {
+                                            refresh(key)
+                                        }
+                                        LingVisSDK.didExpire = ::onExpired
+                                        showResult(lingVisSdk.signIn(email, password, selected == 3, false, key), "Signed in as ${email}")
                                     }
                                 }
                                 dialog.dismiss()

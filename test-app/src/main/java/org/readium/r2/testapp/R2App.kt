@@ -14,13 +14,16 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.content.ContentResolver
 import android.content.Context
+import kotlinx.coroutines.*
 import org.readium.r2.lingVisSdk.LingVisSDK
 import org.readium.r2.shared.Injectable
 import org.readium.r2.streamer.server.Server
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import timber.log.Timber
 import java.io.IOException
+import java.net.HttpURLConnection
 import java.net.ServerSocket
+import java.net.URL
 import java.util.*
 
 class R2App : Application() {
@@ -33,11 +36,7 @@ class R2App : Application() {
         server = Server(s.localPort, applicationContext)
         startServer()
         R2DIRECTORY = r2Directory
-        // LingVisSDK...
-        LingVisSDK.prepare("R2TestApp-Android", "r2 sample")
-        server.loadCustomResource("window.lingVisSdk_Readium_isAndroid = true; ".byteInputStream(), "lingVisSdk-pre.js", Injectable.Script)
-        server.loadCustomResource(assets.open("readium/scripts/lingVisSdk.js"), "lingVisSdk-poly-core.js", Injectable.Script)
-        //...LingVisSDK
+        org.readium.r2.lingVisSdk.attachLingVisSdk() // LingVisSDK
     }
 
     companion object {
