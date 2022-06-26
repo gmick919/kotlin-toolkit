@@ -36,7 +36,7 @@ class R2App : Application() {
         server = Server(s.localPort, applicationContext)
         startServer()
         R2DIRECTORY = r2Directory
-        org.readium.r2.lingVisSdk.attachLingVisSdk() // LingVisSDK
+        LingVisSDK.prepare("1e046ac8-ffb9-4f5a-938f-843b28dd9bb5", "1.4.x", "R2TestApp-Android", "r2 sample", server) // LingVisSDK
     }
 
     companion object {
