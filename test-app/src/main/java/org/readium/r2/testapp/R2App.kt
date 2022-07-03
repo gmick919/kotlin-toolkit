@@ -36,7 +36,9 @@ class R2App : Application() {
         server = Server(s.localPort, applicationContext)
         startServer()
         R2DIRECTORY = r2Directory
-        LingVisSDK.prepare("1e046ac8-ffb9-4f5a-938f-843b28dd9bb5", "1.4.x", "R2TestApp-Android", "r2 sample", server) // LingVisSDK
+        val testClientId = "367ebb09-57e9-4129-bae6-083d2d7b838e"
+        val testClientIdSecure = "40c76cda-bd9b-4b6c-aafd-137b187bedf4"
+        LingVisSDK.prepare(testClientId, "1.4.x", "R2TestApp-Android", "r2 sample", server) // LingVisSDK
     }
 
     companion object {

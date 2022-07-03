@@ -170,7 +170,7 @@ class BookshelfFragment : Fragment() {
                                     showResult(failure(Exception("Email and password cannot be empty")), "")
                                 } else {
                                     uiScope.launch {
-                                        val key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbGllbnRJZCI6ImVmMzZmMzRhLTViNmItYjU4Yi1kZTk4LTlkNjM0ZDFlMDFhNiIsImVtYWlsIjoid2ViLXNhbXBsZS5ib2d1c0BzcHJha2tyYWZ0LmNvbSIsImlhdCI6MTY1NTU1Nzc3Nn0.waJ41buXn8lh_hkRdNQ7gUG6jfCTTkp2JPPgX2hZsTY"
+                                        val key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbGllbnRJZCI6IjQwYzc2Y2RhLWJkOWItNGI2Yy1hYWZkLTEzN2IxODdiZWRmNCIsImVtYWlsIjoid2ViLXNhbXBsZS5ib2d1c0BzcHJha2tyYWZ0LmNvbSIsImlhdCI6MTY1NDQ0NzAxMn0.0kFpW3-HMRgVYJ-QxQ8wZQ8WderpKGjBHmah2ynmNRs"
                                         fun onExpired(refresh: (String) -> Unit) {
                                             refresh(key)
                                         }
