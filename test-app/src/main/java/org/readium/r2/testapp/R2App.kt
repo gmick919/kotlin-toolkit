@@ -36,9 +36,14 @@ class R2App : Application() {
         server = Server(s.localPort, applicationContext)
         startServer()
         R2DIRECTORY = r2Directory
-        val testClientId = "367ebb09-57e9-4129-bae6-083d2d7b838e"
-        val testClientIdSecure = "40c76cda-bd9b-4b6c-aafd-137b187bedf4"
-        LingVisSDK.prepare(testClientId, "1.4.x", "R2TestApp-Android", "r2 sample", server) // LingVisSDK
+
+        // LingVisSDK...
+        // These two client ids are used only for demo, testing and debug.
+        // Don't use them in production. Use the client ids assigned to your applications by Språkkraft.
+        val testClientId = "367ebb09-57e9-4129-bae6-083d2d7b838e" // not secure: clientKey and onExpired arguments are ignored
+        val testClientIdSecure = "40c76cda-bd9b-4b6c-aafd-137b187bedf4" // secure: clientKey is used to authorize the user, onExpired is used to automatically re-authorize the user after the previous authorization expires (after about 24 hours)
+        LingVisSDK.prepare(testClientId, "1.4.x", "R2TestApp-Android", "r2 sample", server)
+        //...LingVisSDK
     }
 
     companion object {

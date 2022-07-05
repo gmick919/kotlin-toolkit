@@ -170,7 +170,13 @@ class BookshelfFragment : Fragment() {
                                     showResult(failure(Exception("Email and password cannot be empty")), "")
                                 } else {
                                     uiScope.launch {
+                                        // Client keys encrypt client id, client secret, and user id (email). See the 'Security' section in the documentation for instructions how to create them.
+                                        // You only need client keys if you are using a secure client id. If you choose to use a client id that is not secure, clientKey and onExpired arguments are ignored.
+                                        // Client key must be generated on your server. It should never be generated on the client because its generation includes client secret that should NEVER be exposed.
+                                        // This particular key has no expiration date, for demo purposes. Don't do it in production, always specify a short expiration period. Recommended value for expireIn: 10 minutes.
+                                        // This particular key was created for the demo user "web-sample.bogus@sprakkraft.com". Trying the secure client id in this sample, use that user email. Since any key is generated tied to a specific user, it will not work for other users.
                                         val key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbGllbnRJZCI6IjQwYzc2Y2RhLWJkOWItNGI2Yy1hYWZkLTEzN2IxODdiZWRmNCIsImVtYWlsIjoid2ViLXNhbXBsZS5ib2d1c0BzcHJha2tyYWZ0LmNvbSIsImlhdCI6MTY1NDQ0NzAxMn0.0kFpW3-HMRgVYJ-QxQ8wZQ8WderpKGjBHmah2ynmNRs"
+                                        // key and didExpire are used only if you use a secure client id. Otherwise, they are ignored.
                                         fun onExpired(refresh: (String) -> Unit) {
                                             refresh(key)
                                         }
