@@ -73,7 +73,7 @@ class LingVisSDK(val navigatorFragment: EpubNavigatorFragment?, val context: Con
     }
 
     init {
-        WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
+        //WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
         if (navigatorFragment == null) {
             mainWebView = WebView(context)
             mainHandler = LingVisHandler(this, mainWebView, context, true, "")
@@ -82,7 +82,24 @@ class LingVisSDK(val navigatorFragment: EpubNavigatorFragment?, val context: Con
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 mainWebView.settings.safeBrowsingEnabled = false
             }
-            mainWebView.loadUrl("file:///android_asset/readium/scripts/lingVisSdk.html")
+            mainWebView.loadDataWithBaseURL ("https://sprakkraft.org/lingvis-sdk/readium/",
+                """
+                        <!DOCTYPE html>"
+                        <html>
+                        <head>
+                        <meta charset="UTF-8" />
+                        <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1" />
+                        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+                        <script>
+                            window.readium = {};
+                            window.lingVisSdk_Readium_isAndroid = true;
+                        </script>
+                        </head>
+                        <body>
+                        <script src="https://sprakkraft.org/lingvis-sdk/readium/1.4.x/"></script>
+                        </body>
+                        </html>
+                """,null,null,null)
         }
     }
 
