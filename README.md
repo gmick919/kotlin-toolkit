@@ -1,4 +1,4 @@
-# Readium Kotlin Toolkit with Integrated LingVis SDK
+# Readium Kotlin Toolkit with Integrated LingVis SDK 1.4.11
 
 This repository was forked on Jan 29 2002 from https://github.com/readium/kotlin-toolkit
 It contains the standard Readium sample app with integrated LingVis SDK.
